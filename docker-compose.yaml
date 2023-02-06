@@ -1,0 +1,39 @@
+version: '3.9'
+
+volumes:
+    ci-data: 
+
+services:
+  ci:
+    image: drone/drone:latest
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - DRONE_SERVER_HOST=localhost:80
+      - DRONE_SERVER_PROTO=http
+      - DRONE_SERVER_PROXY_HOST=${DRONE_SERVER_PROXY_HOST}
+      - DRONE_SERVER_PROXY_PROTO=https
+      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+      - DRONE_COOKIE_SECRET=${DRONE_COOKIE_SECRET}
+      - DRONE_COOKIE_TIMEOUT=720h
+      - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID}
+      - DRONE_GITHUB_CLIENT_SECRET=${DRONE_GITHUB_CLIENT_SECRET}
+      - DRONE_LOGS_DEBUG=true
+    volumes:
+      - ci-data:/var/lib/drone/
+  runner:
+    image: drone/drone-runner-docker:latest
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      - DRONE_RPC_HOST=ci
+      - DRONE_RPC_PROTO=http
+      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+      - DRONE_RUNNER_NAME=my-first-runner
+      - DRONE_TMATE_ENABLED=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    
